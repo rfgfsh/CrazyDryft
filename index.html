@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сумашедший дрифт🚗🚗</title>
+    
+    <!-- 🔹 Фавиконка для браузера (SVG с эмодзи) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+    
+    <!-- 🔹 Фавиконка для iOS/Apple устройств -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            max-width: 800px;
+            width: 95%;
+            display: flex;
+            gap: 15px;
+        }
+
+        .game-main {
+            flex: 1;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .game-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .score-board {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+        }
+
+        .score-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 6px;
+        }
+
+        .score-label {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+
+        .score-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .timer-warning {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%) !important;
+            animation: pulse-timer 0.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-timer {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        #gameCanvas {
+            border: 3px solid #ff6b6b;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+            background: linear-gradient(to bottom, #e0f7fa 0%, #b2ebf2 100%);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls-info {
+            margin-top: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .controls-info h3 {
+            color: #ff6b6b;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .controls-info p {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .keys {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .key {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 11px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Leaderboard Styles */
+        .leaderboard-section {
+            width: 220px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .leaderboard-title {
+            color: #ff6b6b;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ff6b6b;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .leaderboard-table th {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 6px 4px;
+            text-align: center;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .leaderboard-table td {
+            padding: 6px 4px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .leaderboard-table tr:nth-child(1) td {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .leaderboard-table tr:nth-child(2) td {
+            background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .leaderboard-table tr:nth-child(3) td {
+            background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .rank-1 { color: #FFD700; font-weight: bold; }
+        .rank-2 { color: #C0C0C0; font-weight: bold; }
+        .rank-3 { color: #CD7F32; font-weight: bold; }
+
+        .leaderboard-empty {
+            text-align: center;
+            color: #999;
+            font-size: 11px;
+            padding: 20px 0;
+        }
+
+        .clear-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 6px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: background 0.2s;
+        }
+
+        .clear-btn:hover {
+            background: #ff6b81;
+        }
+
+        .game-over {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .game-over h2 {
+            color: #ff6b6b;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .game-over.crash h2 {
+            color: #ff4757;
+        }
+
+        .game-over.timeout h2 {
+            color: #ff9f43;
+        }
+
+        .game-over p {
+            font-size: 16px;
+            margin-bottom: 18px;
+            color: #333;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .restart-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .collect-animation {
+            animation: pulse 0.3s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .shake-animation {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+                max-width: 520px;
+            }
+            
+            .leaderboard-section {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-main">
+            <div class="game-header">
+                <div class="game-title">👶 Сумашедший дрифт👶</div>
+                <div class="score-board">
+                    <div class="score-item">
+                        <div class="score-label">Счёт</div>
+                        <div class="score-value" id="score">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Время</div>
+                        <div class="score-value" id="timer">30</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Осталось</div>
+                        <div class="score-value" id="keysLeft">10</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Попытки</div>
+                        <div class="score-value" id="attempts">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <canvas id="gameCanvas" width="500" height="375"></canvas>
+
+            <div class="controls-info">
+                <h3>🎮 Управление</h3>
+                <p>Стрелки для управления, соберите все ключи за <strong>30 секунд</strong>! <strong>Не врежьтесь в стены!</strong></p>
+                <div class="keys">
+                    <div class="key">↑</div>
+                    <div class="key">↓</div>
+                    <div class="key">←</div>
+                    <div class="key">→</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Section -->
+        <div class="leaderboard-section">
+            <div class="leaderboard-title">🏆 Таблица лидеров</div>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Имя</th>
+                        <th>Счёт</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <tr>
+                        <td colspan="3" class="leaderboard-empty">Нет записей</td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="clear-btn" onclick="clearLeaderboard()">🗑️ Очистить</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- Win Screen -->
+    <div class="game-over" id="gameOverWin">
+        <h2>🎉 Победа! 👶</h2>
+        <p>Все ключи собраны!<br>Счёт: <span id="finalScore">0</span><br>Осталось времени: <span id="timeLeft">0</span>с</p>
+        <div style="margin-bottom: 15px;">
+            <input type="text" id="playerName" placeholder="Ваше имя" maxlength="10" 
+                   style="padding: 8px; border: 2px solid #ff6b6b; border-radius: 6px; width: 150px; text-align: center; font-size: 14px;">
+        </div>
+        <button class="restart-btn" onclick="saveAndRestart()">Сохранить и играть снова</button>
+    </div>
+
+    <!-- Crash Screen -->
+    <div class="game-over crash" id="gameOverCrash">
+        <h2>💥 Авария! 👶</h2>
+        <p>Вы врезались в стену!<br>Счёт: <span id="crashScore">0</span></p>
+        <p>Осталось попыток: <span id="attemptsLeft">2</span></p>
+        <button class="restart-btn" onclick="retryLevel()">Попробовать снова</button>
+    </div>
+
+    <!-- Timeout Screen -->
+    <div class="game-over timeout" id="gameOverTimeout">
+        <h2>⏰ Время вышло! 👶</h2>
+        <p>Не успели собрать все ключи!<br>Счёт: <span id="timeoutScore">0</span></p>
+        <p>Осталось попыток: <span id="timeoutAttempts">2</span></p>
+        <button class="restart-btn" onclick="retryLevel()">Попробовать снова</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div class="game-over crash" id="gameOverFinal">
+        <h2>😞 Игра окончена 👶</h2>
+        <p>Попытки закончились!<br>Финальный счёт: <span id="finalScoreLoss">0</span></p>
+        <button class="restart-btn" onclick="fullRestart()">Начать заново</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const keysLeftElement = document.getElementById('keysLeft');
+        const attemptsElement = document.getElementById('attempts');
+        const gameOverWin = document.getElementById('gameOverWin');
+        const gameOverCrash = document.getElementById('gameOverCrash');
+        const gameOverTimeout = document.getElementById('gameOverTimeout');
+        const gameOverFinal = document.getElementById('gameOverFinal');
+        const overlay = document.getElementById('overlay');
+        const finalScoreElement = document.getElementById('finalScore');
+        const timeLeftElement = document.getElementById('timeLeft');
+        const crashScoreElement = document.getElementById('crashScore');
+        const finalScoreLossElement = document.getElementById('finalScoreLoss');
+        const attemptsLeftElement = document.getElementById('attemptsLeft');
+        const timeoutScoreElement = document.getElementById('timeoutScore');
+        const timeoutAttemptsElement = document.getElementById('timeoutAttempts');
+        const leaderboardBody = document.getElementById('leaderboardBody');
+        const playerNameInput = document.getElementById('playerName');
+
+        let score = 0;
+        let totalKeys = 10;
+        let keysCollected = 0;
+        let gameRunning = true;
+        let attempts = 3;
+        let maxAttempts = 3;
+        let timeLeft = 30;
+        let timerInterval = null;
+        const maxTime = 30;
+
+        const car = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            width: 40,
+            height: 65,
+            speed: 0,
+            maxSpeed: 6,
+            acceleration: 0.3,
+            friction: 0.95,
+            angle: 0,
+            rotationSpeed: 0.08
+        };
+
+        let keys = [];
+
+        const keys_pressed = {
+            ArrowUp: false,
+            ArrowDown: false,
+            ArrowLeft: false,
+            ArrowRight: false
+        };
+
+        // Leaderboard functions
+        function getLeaderboard() {
+            const saved = localStorage.getItem('crazyDriftLeaderboard');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        function saveToLeaderboard(name, score) {
+            const leaderboard = getLeaderboard();
+            leaderboard.push({ name: name || 'Аноним', score: score, date: new Date().toLocaleDateString(), time: timeLeft });
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard.splice(10);
+            localStorage.setItem('crazyDriftLeaderboard', JSON.stringify(leaderboard));
+            updateLeaderboardDisplay();
+        }
+
+        function updateLeaderboardDisplay() {
+            const leaderboard = getLeaderboard();
+            if (leaderboard.length === 0) {
+                leaderboardBody.innerHTML = '<tr><td colspan="3" class="leaderboard-empty">Нет записей</td></tr>';
+                return;
+            }
+
+            leaderboardBody.innerHTML = leaderboard.map((entry, index) => `
+                <tr>
+                    <td class="rank-${index + 1}">${index + 1}</td>
+                    <td>${escapeHtml(entry.name)}</td>
+                    <td>${entry.score}</td>
+                </tr>
+            `).join('');
+        }
+
+        function clearLeaderboard() {
+            if (confirm('Вы уверены, что хотите очистить таблицу лидеров?')) {
+                localStorage.removeItem('crazyDriftLeaderboard');
+                updateLeaderboardDisplay();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function saveAndRestart() {
+            const name = playerNameInput.value.trim() || 'Аноним';
+            saveToLeaderboard(name, score);
+            fullRestart();
+        }
+
+        // Timer functions
+        function startTimer() {
+            stopTimer();
+            timeLeft = maxTime;
+            timerElement.textContent = timeLeft;
+            timerElement.parentElement.classList.remove('timer-warning');
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                
+                if (timeLeft <= 10) {
+                    timerElement.parentElement.classList.add('timer-warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    timeOut();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function timeOut() {
+            stopTimer();
+            gameRunning = false;
+            attempts--;
+            attemptsElement.textContent = attempts;
+            timeoutScoreElement.textContent = score;
+            timeoutAttemptsElement.textContent = attempts;
+
+            if (attempts > 0) {
+                overlay.style.display = 'block';
+                gameOverTimeout.style.display = 'block';
+            } else {
+                finalScoreLossElement.textContent = score;
+                overlay.style.display = 'block';
+                gameOverFinal.style.display = 'block';
+            }
+        }
+
+        function initKeys() {
+            keys = [];
+            for (let i = 0; i < totalKeys; i++) {
+                spawnKey();
+            }
+        }
+
+        function spawnKey() {
+            const padding = 30;
+            keys.push({
+                x: padding + Math.random() * (canvas.width - padding * 2),
+                y: padding + Math.random() * (canvas.height - padding * 2),
+                width: 20,
+                height: 20,
+                collected: false,
+                rotation: 0
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (keys_pressed.hasOwnProperty(e.key)) {
+                keys_pressed[e.key] = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (keys_pressed.hasOwnProperty(e.key)) {
+                keys_pressed[e.key] = false;
+            }
+        });
+
+        function updateCar() {
+            if (keys_pressed.ArrowUp) {
+                car.speed += car.acceleration;
+            }
+            if (keys_pressed.ArrowDown) {
+                car.speed -= car.acceleration;
+            }
+
+            car.speed *= car.friction;
+
+            if (car.speed > car.maxSpeed) car.speed = car.maxSpeed;
+            if (car.speed < -car.maxSpeed / 2) car.speed = -car.maxSpeed / 2;
+            if (Math.abs(car.speed) < 0.1) car.speed = 0;
+
+            if (Math.abs(car.speed) > 0.5) {
+                const direction = car.speed > 0 ? 1 : -1;
+                if (keys_pressed.ArrowLeft) {
+                    car.angle -= car.rotationSpeed * direction;
+                }
+                if (keys_pressed.ArrowRight) {
+                    car.angle += car.rotationSpeed * direction;
+                }
+            }
+
+            car.x += Math.sin(car.angle) * car.speed;
+            car.y -= Math.cos(car.angle) * car.speed;
+
+            checkWallCollision();
+        }
+
+        function checkWallCollision() {
+            const carLeft = car.x - car.width / 2;
+            const carRight = car.x + car.width / 2;
+            const carTop = car.y - car.height / 2;
+            const carBottom = car.y + car.height / 2;
+
+            if (carLeft <= 0 || carRight >= canvas.width || 
+                carTop <= 0 || carBottom >= canvas.height) {
+                crashIntoWall();
+            }
+        }
+
+        function crashIntoWall() {
+            stopTimer();
+            gameRunning = false;
+            attempts--;
+            attemptsElement.textContent = attempts;
+            crashScoreElement.textContent = score;
+            attemptsLeftElement.textContent = attempts;
+
+            canvas.classList.add('shake-animation');
+            setTimeout(() => {
+                canvas.classList.remove('shake-animation');
+            }, 500);
+
+            if (attempts > 0) {
+                overlay.style.display = 'block';
+                gameOverCrash.style.display = 'block';
+            } else {
+                finalScoreLossElement.textContent = score;
+                overlay.style.display = 'block';
+                gameOverFinal.style.display = 'block';
+            }
+        }
+
+        function checkCollisions() {
+            keys.forEach((key) => {
+                if (!key.collected) {
+                    const dx = car.x - key.x;
+                    const dy = car.y - key.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < (car.width / 2 + key.width / 2)) {
+                        key.collected = true;
+                        score += 100;
+                        keysCollected++;
+                        scoreElement.textContent = score;
+                        keysLeftElement.textContent = totalKeys - keysCollected;
+                        
+                        scoreElement.parentElement.classList.add('collect-animation');
+                        setTimeout(() => {
+                            scoreElement.parentElement.classList.remove('collect-animation');
+                        }, 300);
+
+                        if (keysCollected >= totalKeys) {
+                            winGame();
+                        }
+                    }
+                }
+            });
+        }
+
+        function drawCar() {
+            ctx.save();
+            ctx.translate(car.x, car.y);
+            ctx.rotate(car.angle);
+
+            ctx.fillStyle = '#ff6b6b';
+            ctx.beginPath();
+            ctx.roundRect(-car.width / 2, -car.height / 2, car.width, car.height, 6);
+            ctx.fill();
+            ctx.strokeStyle = '#ee5a6f';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#1a1a2e';
+            ctx.beginPath();
+            ctx.roundRect(-car.width / 2 + 6, -car.height / 2 + 12, car.width - 12, 16, 3);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.roundRect(-car.width / 2 + 6, car.height / 2 - 20, car.width - 12, 13, 3);
+            ctx.fill();
+
+            ctx.fillStyle = '#FFFF00';
+            ctx.beginPath();
+            ctx.arc(-car.width / 2 + 8, -car.height / 2 + 3, 4, 0, Math.PI * 2);
+            ctx.arc(car.width / 2 - 8, -car.height / 2 + 3, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#2d2d2d';
+            ctx.fillRect(-car.width / 2 - 5, -car.height / 2 + 10, 5, 13);
+            ctx.fillRect(car.width / 2, -car.height / 2 + 10, 5, 13);
+            ctx.fillRect(-car.width / 2 - 5, car.height / 2 - 23, 5, 13);
+            ctx.fillRect(car.width / 2, car.height / 2 - 23, 5, 13);
+
+            ctx.restore();
+        }
+
+        function drawKeys() {
+            keys.forEach((key) => {
+                if (!key.collected) {
+                    key.rotation += 0.05;
+                    
+                    ctx.save();
+                    ctx.translate(key.x, key.y);
+                    ctx.rotate(key.rotation);
+
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.roundRect(-key.width / 2, -key.height / 2, key.width, key.height, 3);
+                    ctx.fill();
+                    ctx.strokeStyle = '#FFA500';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#FFA500';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    ctx.beginPath();
+                    ctx.arc(-3, -3, 2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            });
+        }
+
+        function drawRoad() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([15, 15]);
+            
+            for (let y = 0; y < canvas.height; y += 75) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            for (let x = 0; x < canvas.width; x += 75) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            ctx.setLineDash([]);
+        }
+
+        function drawWalls() {
+            ctx.strokeStyle = timeLeft <= 10 ? '#ff4757' : '#ff6b6b';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 10]);
+            ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+            ctx.setLineDash([]);
+        }
+
+        function winGame() {
+            stopTimer();
+            gameRunning = false;
+            finalScoreElement.textContent = score;
+            timeLeftElement.textContent = timeLeft;
+            overlay.style.display = 'block';
+            gameOverWin.style.display = 'block';
+            playerNameInput.value = '';
+            playerNameInput.focus();
+        }
+
+        function retryLevel() {
+            gameRunning = true;
+            overlay.style.display = 'none';
+            gameOverCrash.style.display = 'none';
+            gameOverTimeout.style.display = 'none';
+            
+            car.x = canvas.width / 2;
+            car.y = canvas.height / 2;
+            car.speed = 0;
+            car.angle = 0;
+            
+            keys.forEach(key => key.collected = false);
+            keysCollected = 0;
+            keysLeftElement.textContent = totalKeys;
+            
+            startTimer();
+            gameLoop();
+        }
+
+        function fullRestart() {
+            score = 0;
+            keysCollected = 0;
+            attempts = maxAttempts;
+            gameRunning = true;
+            scoreElement.textContent = '0';
+            keysLeftElement.textContent = totalKeys;
+            attemptsElement.textContent = attempts;
+            overlay.style.display = 'none';
+            gameOverWin.style.display = 'none';
+            gameOverCrash.style.display = 'none';
+            gameOverTimeout.style.display = 'none';
+            gameOverFinal.style.display = 'none';
+            
+            car.x = canvas.width / 2;
+            car.y = canvas.height / 2;
+            car.speed = 0;
+            car.angle = 0;
+            
+            stopTimer();
+            initKeys();
+            startTimer();
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawRoad();
+            drawWalls();
+            updateCar();
+            checkCollisions();
+            drawKeys();
+            drawCar();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Initialize
+        updateLeaderboardDisplay();
+        initKeys();
+        startTimer();
+        gameLoop();
+    </script>
+</body>
+</html>
